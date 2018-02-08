@@ -1,0 +1,25 @@
+{
+  "name": "styled-proxy",
+  "version": "0.0.1",
+  "author": "@Losant",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "files": "lib/**/*.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Losant/styled-proxy.git"
+  },
+  "scripts": {
+    "build": "babel src --out-dir lib --no-comments",
+    "prepublish": "in-publish && yarn build || not-in-publish",
+    "postversion": "git push && git push --tags"
+  },
+  "devDependencies": {
+    "@losant/eslint-config-losant": "^1.2.6",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-imports": "^1.4.1",
+    "babel-preset-env": "^1.6.1",
+    "in-publish": "^2.0.0"
+  }
+}
