@@ -2,7 +2,7 @@ import { __, curry, pipe, keys, reduce, is } from 'ramda';
 
 import { proxyTemplateFunction, proxyTemplateFactory } from './utils';
 
-const styledProxy = curry((proxyFn, styled) => {
+const styledTransformProxy = curry((proxyFn, styled) => {
   const styledReducer = (acc, key) => {
     const originalValue = styled[key];
 
@@ -19,4 +19,4 @@ const styledProxy = curry((proxyFn, styled) => {
   )(styled);
 });
 
-export default styledProxy;
+export default styledTransformProxy;
