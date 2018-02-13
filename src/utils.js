@@ -1,29 +1,25 @@
-/**
- * @typedef ProxyFn = (Array<String> strings, ...* interpolations -> [strings, ...interpolations])
- * @typedef TemplateFn = (Array<String> strings, ...* interpolations) -> Array<String|Function>
- * @typedef TemplateFactoryFn = (*) -> TemplateFn
- */
+// @flow
 
-import { curry, keys, reduce, is } from 'ramda';
+import { __, curry, pipe, propIs, contains, keys, any, allPass  } from 'ramda';
 
-/**
- * Takes a transform function, a target object / function, and a source object / function
- * and copies over all the methods from the source to the target after running each method
- * through the transform function.
- *
- * @signature Function -> Object|Function -> Object|Function -> Object|Function
- */
-const copyMethodsWith = curry((transform, target, source) => {
-  const reducer = (acc, key) => {
-    if (is(Function, source[key])) {
-      acc[key] = transform(source[key]);
-    }
+type ProxyFn = (Array<string>, ...*) => Array<Array<string> | *>;
+type TemplateFn = (Array<string>, ...*) => Array<String | Function>;
+type TemplateFactory = (...*) => TemplateFn;
 
-    return acc;
-  };
+const CHAINABLE_TEMPLATE_FACTORY_METHODS = ['attrs', 'withConfig'];
 
-  return reduce(reducer, target, keys(source));
-});
+const isTemplateFactoryMethod = curry((val: Object | Function, key: string) =>
+  allPass([
+    contains(__, CHAINABLE_TEMPLATE_FACTORY_METHODS),
+    propIs(Function, __, val),
+  ])(key)
+);
+
+export const hasTemplateFactoryMethods = (val: Object | Function) =>
+  pipe(
+    keys,
+    any(isTemplateFactoryMethod(val)),
+  )(val);
 
 /**
  * Takes a transform function and a source function and returns a thunk that accepts any
@@ -32,37 +28,41 @@ const copyMethodsWith = curry((transform, target, source) => {
  *
  * @signature (a -> b) -> (...* -> a) -> (...* -> b)
  */
-const createThunkWith = curry((transform, fn) =>
-  (...args) =>
-    transform(fn(...args))
+const createThunkWith = curry(
+  (transform: (*) => *, fn: (...*) => *) =>
+    (...args: Array<*>) =>
+      transform(fn(...args))
 );
 
-/**
- * @signature ProxyFn -> TemplateFn -> TemplateFn
- */
-const proxy = curry((proxyFn, styledTemplateFn) => {
-  const proxiedTemplateFn = (strings, ...interpolations) => {
-    const proxiedTemplateFnResults = proxyFn(strings, ...interpolations);
+const proxy = curry(
+  (proxyFn: ProxyFn, styledTemplateFn: TemplateFn): TemplateFn => {
+    const proxiedTemplateFn = (strings, ...interpolations) => {
+      const proxiedTemplateFnResults = proxyFn(strings, ...interpolations);
 
-    return styledTemplateFn(...proxiedTemplateFnResults);
-  };
+      return styledTemplateFn(...proxiedTemplateFnResults);
+    };
 
-  return proxiedTemplateFn;
-});
+    return proxiedTemplateFn;
+  }
+);
 
-/**
- * @signature ProxyFn -> TemplateFn -> TemplateFn
- */
-export const makeProxiedTemplateFunction = curry((proxyFn, styledTemplateFn) => {
-  const applyProxyFn = proxy(proxyFn);
-  const proxyMethods = copyMethodsWith(createThunkWith(applyProxyFn));
+export const makeProxiedTemplateFunction = curry(
+  (proxyFn: ProxyFn, styledTemplateFn: TemplateFn): TemplateFn => {
+    const templateFn = proxy(proxyFn, styledTemplateFn);
 
-  return proxyMethods(applyProxyFn(styledTemplateFn), styledTemplateFn);
-});
+    CHAINABLE_TEMPLATE_FACTORY_METHODS.forEach((methodName) => {
+      const originalMethod = styledTemplateFn[methodName];
 
-/**
- * @signature ProxyFn -> TemplateFactoryFn -> TemplateFactoryFn
- */
-export const makeProxiedTemplateFactory = curry((proxyFn, styled) =>
-  createThunkWith(makeProxiedTemplateFunction(proxyFn), styled)
+      templateFn[methodName] = (...args) => {
+        return makeProxiedTemplateFunction(proxyFn, originalMethod(...args));
+      };
+    });
+
+    return templateFn;
+  }
+);
+
+export const makeProxiedTemplateFactory = curry(
+  (proxyFn: ProxyFn, styled: TemplateFactory): TemplateFactory =>
+    createThunkWith(makeProxiedTemplateFunction(proxyFn), styled)
 );

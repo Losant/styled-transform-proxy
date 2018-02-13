@@ -1,22 +1,30 @@
+// @flow
+
 import { __, curry, pipe, keys, reduce, is } from 'ramda';
 
-import { makeProxiedTemplateFunction, makeProxiedTemplateFactory } from './utils';
+import {
+  hasTemplateFactoryMethods,
+  makeProxiedTemplateFunction,
+  makeProxiedTemplateFactory,
+} from './utils';
 
-const styledTransformProxy = curry((transformFn, styled) => {
-  const styledReducer = (acc, key) => {
-    const originalValue = styled[key];
+const styledTransformProxy = curry(
+  (transformFn: (...*) => *, styled: *) => {
+    const styledReducer = (acc: Function, key: string) => {
+      const sourceValue = styled[key];
 
-    if (is(Function, originalValue) && is(Function, originalValue.attrs)) {
-      acc[key] = makeProxiedTemplateFunction(transformFn, originalValue);
-    }
+      if (is(Function, sourceValue) && hasTemplateFactoryMethods(sourceValue)) {
+        acc[key] = makeProxiedTemplateFunction(transformFn, sourceValue);
+      }
 
-    return acc;
-  };
+      return acc;
+    };
 
-  return pipe(
-    makeProxiedTemplateFactory(transformFn), // styled(Component)
-    reduce(styledReducer, __, keys(styled)), // styled.div, styled.span, etc.
-  )(styled);
-});
+    return pipe(
+      makeProxiedTemplateFactory(transformFn), // styled(Component)
+      reduce(styledReducer, __, keys(styled)), // styled.div, styled.span, etc.
+    )(styled);
+  }
+);
 
 export default styledTransformProxy;

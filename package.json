@@ -1,6 +1,6 @@
 {
   "name": "styled-transform-proxy",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "@Losant",
   "license": "MIT",
   "main": "lib/index.js",
@@ -21,7 +21,15 @@
     "@losant/eslint-config-losant": "^1.2.6",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.1",
     "babel-plugin-transform-imports": "^1.4.1",
-    "babel-preset-env": "^1.6.1"
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-flow": "^6.23.0",
+    "eslint": "^4.17.0",
+    "eslint-plugin-flowtype": "^2.44.0",
+    "eslint-plugin-lodash": "^2.6.1",
+    "eslint-plugin-react": "^7.6.1",
+    "flow-bin": "^0.65.0",
+    "flow-typed": "^2.3.0"
   }
 }
