@@ -10,7 +10,7 @@
     "url": "git+https://github.com/Losant/styled-transform-proxy.git"
   },
   "scripts": {
-    "build": "babel src --out-dir lib --no-comments",
+    "build": "rm -rf lib/* && babel src --out-dir lib --no-comments",
     "prepublishOnly": "yarn build",
     "postversion": "git push && git push --tags"
   },
