@@ -100,9 +100,9 @@ export default proxy(styled);
 
 ## Caveats
 
-Currently there is no straightforward way to tap into the `extend()` method on a styled
-component, so the transform function will not be applied when using `extend()`. In
-practice this just means that instead of this:
+Currently there is no straightforward way to tap into the `extend` method on a styled
+component, so the transform function will not be applied when using `extend`. So instead
+of this:
 
 ```js
 const ChildComponent = ParentComponent.extend`...`;
