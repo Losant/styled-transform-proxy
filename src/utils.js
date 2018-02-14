@@ -2,9 +2,12 @@
 
 import { __, curry, pipe, propIs, contains, keys, any, allPass, is } from 'ramda';
 
-type ProxyFn = (Array<string>, ...*) => Array<Array<string> | *>;
+type UnaryFn<I, R=I> = (I) => R;
+type VariadicFn<R> = (...*) => R;
+
+type ProxyFn = (Array<string>, ...*) => Array<*>;
 type TemplateFn = (Array<string>, ...*) => Array<String | Function>;
-type TemplateFactory = (...*) => TemplateFn;
+type TemplateFactory = VariadicFn<TemplateFn>;
 
 const CHAINABLE_TEMPLATE_FACTORY_METHODS = ['attrs', 'withConfig'];
 
@@ -29,8 +32,8 @@ export const hasTemplateFactoryMethods = (val: Object | Function) =>
  * @signature (a -> b) -> (...* -> a) -> (...* -> b)
  */
 const createThunkWith = curry(
-  (transform: (*) => *, fn: (...*) => *) =>
-    (...args: Array<*>) =>
+  (transform: UnaryFn<*>, fn: VariadicFn<*>): VariadicFn<*> =>
+    (...args) =>
       transform(fn(...args))
 );
 
