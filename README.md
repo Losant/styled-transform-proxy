@@ -1,7 +1,7 @@
 # styled-transform-proxy
 
-A helper function for extending styled-components via a custom transform function. The
-helper function is curried and takes two arguments - the transform function and the
+A wrapper function for extending styled-components via a custom transform function. The
+wrapper function is curried and takes two arguments - the transform function and the
 original `styled` function from `styled-components`. The transform receives the original
 strings & interpolations and is expected to return an array containing the strings and
 interpolations with any transformations applied.
@@ -74,6 +74,28 @@ const MyComponent = styled.span`
   color: ${(props) => props.colors.foreground};
   background-color: ${(props) => props.colors.background};
 `;
+```
+
+### Composing transforms
+
+The wrapper function being curried means that composing multiple transformations together
+is simple:
+
+```js
+// src/styled.js
+import styled from 'styled-components';
+import styledTransformProxy from 'styled-transform-proxy';
+import { compose } from 'ramda';
+
+const transformFoo = (strings, ...interpolations) => [...];
+const transformBar = (strings, ...interpolations) => [...];
+
+const proxy = compose(
+  styledTransformProxy(transformFoo),
+  styledTransformProxy(transformBar),
+);
+
+export default proxy(styled);
 ```
 
 ## Caveats
