@@ -10,7 +10,7 @@ import {
 
 const styledTransformProxy = curry(
   (transformFn: (...*) => *, styled: *) => {
-    const styledReducer = (acc: Function, key: string) => {
+    const styledReducer = (acc: Function | $Placeholder, key: string) => {
       const sourceValue = styled[key];
 
       if (is(Function, sourceValue) && hasTemplateFactoryMethods(sourceValue)) {

@@ -9,4 +9,12 @@ module.exports = {
   rules: {
     'arrow-body-style': 'off',
   },
+  overrides: [
+    {
+      files: ['src/**/*.test.js'],
+      env: {
+        jest: true,
+      },
+    },
+  ],
 };

@@ -8,5 +8,9 @@
 [lints]
 
 [options]
+suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
+suppress_comment= \\(.\\|\n\\)*\\$FlowIgnore
+
+suppress_type=$Placeholder
 
 [strict]

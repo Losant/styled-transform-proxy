@@ -1,8 +1,10 @@
 # styled-transform-proxy
 
-Helper function for extending styled-components via a custom transform function. This
-function is curried and takes two arguments - the transform function and the original
-`styled` function from `styled-components`.
+A helper function for extending styled-components via a custom transform function. The
+helper function is curried and takes two arguments - the transform function and the
+original `styled` function from `styled-components`. The transform receives the original
+strings & interpolations and is expected to return an array containing the strings and
+interpolations with any transformations applied.
 
 ## Type Definitions
 
@@ -17,7 +19,7 @@ styledTransformProxy :: transform -> styled -> styled
 ### Transform strings
 
 ```js
-// src/styled-custom.js
+// src/styled.js
 import styled from 'styled-components';
 import styledTransformProxy from 'styled-transform-proxy';
 import { map, replace } from 'ramda';
@@ -31,8 +33,8 @@ const transform = (strings, ...interpolations) => [
 
 export default styledTransformProxy(transform, styled);
 
-// src/components/my-component.js
-import styled from '../styled-custom';
+// src/components/MyComponent.js
+import styled from '../styled';
 
 // Results in `.foo` below being transformed to `.bar`
 const MyComponent = styled.span`
@@ -45,34 +47,47 @@ const MyComponent = styled.span`
 ### Transform interpolations
 
 ```js
-// src/styled-custom.js
+// src/styled.js
 import styled from 'styled-components';
 import styledTransformProxy from 'styled-transform-proxy';
-import { identity, map, path, useWith, split, when, is } from 'ramda';
+import { map, path, when, is } from 'ramda';
 
-/**
- * Takes a dot-separated path and an object and returns the value at that path.
- * e.g. dotPath('foo.bar', { foo: { bar: 1 } }); => 1
- *
- * dotPath :: String -> Object -> *
- */
-const dotPath = useWith(path, [split('.'), identity]);
-
-const transformInterpolations = map(when(is(String), dotPath));
+const transformInterpolations = map(when(is(Array), path));
 
 const transform = (strings, ...interpolations) => [
   strings,
-  ...transformInterpolations(interpolations)
+  ...transformInterpolations(interpolations),
 ];
 
 export default styledTransformProxy(transform, styled);
 
-// src/components/my-component.js
-import styled from '../styled-custom';
+// src/components/MyComponent.js
+import styled from '../styled';
 
-// Results in `.foo` below being transformed to `.bar`
 const MyComponent = styled.span`
-  color: ${'colors.foreground'};
-  background-color: ${'colors.background'}
+  color: ${['colors', 'foreground']};
+  background-color: ${['colors', 'background']}
 `;
+
+// The above is equivalent to:
+const MyComponent = styled.span`
+  color: ${(props) => props.colors.foreground};
+  background-color: ${(props) => props.colors.background};
+`;
+```
+
+## Caveats
+
+Currently there is no straightforward way to tap into the `extend()` method on a styled
+component, so the transform function will not be applied when using `extend()`. In
+practice this just means that instead of this:
+
+```js
+const ChildComponent = ParentComponent.extend`...`;
+```
+
+...you'll need to do this:
+
+```js
+const ChildComponent = styled(ParentComponent)`...`;
 ```
