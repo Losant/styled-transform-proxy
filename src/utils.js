@@ -1,6 +1,6 @@
 // @flow
 
-import { __, curry, pipe, propIs, contains, keys, any, allPass  } from 'ramda';
+import { __, curry, pipe, propIs, contains, keys, any, allPass, is } from 'ramda';
 
 type ProxyFn = (Array<string>, ...*) => Array<Array<string> | *>;
 type TemplateFn = (Array<string>, ...*) => Array<String | Function>;
@@ -53,9 +53,12 @@ export const makeProxiedTemplateFunction = curry(
     CHAINABLE_TEMPLATE_FACTORY_METHODS.forEach((methodName) => {
       const originalMethod = styledTemplateFn[methodName];
 
-      templateFn[methodName] = (...args) => {
-        return makeProxiedTemplateFunction(proxyFn, originalMethod(...args));
-      };
+      if (is(Function, originalMethod)) {
+        templateFn[methodName] = createThunkWith(
+          makeProxiedTemplateFunction(proxyFn),
+          originalMethod,
+        );
+      }
     });
 
     return templateFn;
