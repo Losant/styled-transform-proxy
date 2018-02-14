@@ -6,6 +6,16 @@ original `styled` function from `styled-components`. The transform receives the 
 strings & interpolations and is expected to return an array containing the strings and
 interpolations with any transformations applied.
 
+## Install
+
+```sh
+# Yarn
+yarn add styled-transform-proxy
+
+# npm
+npm install --save styled-transform-proxy
+```
+
 ## Type Definitions
 
 ```
